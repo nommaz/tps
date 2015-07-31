@@ -1,2 +1,2 @@
-# tps
-Could based Third Party Services integration via Hugin TSM
+# TPS (Third Party Services)
+Could based integration via Hugin TSM
