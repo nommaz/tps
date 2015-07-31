@@ -1,2 +1,2 @@
 # TPS (Third Party Services)
-Could based integration via Hugin TSM
+RESTful integration service via Hugin TSM
