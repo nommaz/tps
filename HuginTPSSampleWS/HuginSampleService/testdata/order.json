@@ -1,0 +1,45 @@
+{
+  "OkcId": "",
+  "OkcPassword": "",
+  "TokenId": "",
+  "DocumentType": 1,
+  "SaleItems": [
+    {
+      "Quantity": 1.0,
+      "Amount": 10.0,
+      "Barcode": "123451",
+      "PluNo": 1,
+      "DepartmentId": 3,
+      "VatRate": 18,
+      "Definition": "YAGLI BOYA",
+      "ItemNotes": [
+        "BIRAZ"
+      ],
+      "ReferenceCode": "",
+      "Weighable": "",
+      "Price": 12.0,
+	  "DiscountInfo":{"DiscountTotal":2.0,"DiscountRate":0,"DiscountNotes":[]}
+    },
+    {
+      "Quantity": 1.0,
+      "Amount": 3.0,
+      "Barcode": "123452",
+      "PluNo": 1,
+      "DepartmentId": 3,
+      "VatRate": 18,
+      "Definition": "SULU BOYA",
+      "ReferenceCode": "",
+      "Weighable": "",
+      "Price": 15.0
+    },
+    
+  ],
+  "PayItems": [
+    {
+      "Amount": 11.0,
+      "PaymentType": 1
+    }
+  ],
+  "SalesTotal": 11.0,
+  "DiscountCode": "PXV345FK"
+}
