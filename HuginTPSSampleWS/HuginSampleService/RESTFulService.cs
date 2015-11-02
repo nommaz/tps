@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -15,17 +15,20 @@ namespace HuginWS
     public class TPSService
     {
         [OperationContract]
-        [WebInvoke(UriTemplate = "sale?okc_id={okc_id}&password={password}", Method = "POST", BodyStyle = WebMessageBodyStyle.Bare, ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        string sale(string okc_id, string password, string sales_info)
+        [WebInvoke(UriTemplate = "sale?okc_id={okc_id}&password={password}",
+            Method = "POST",
+            ResponseFormat = WebMessageFormat.Json)]
+        string sale(string okc_id, string password)
         {
             WSResult wsResult = null;
             try
             {
                 /* okc_id and password should be done with authority control. */
 
-                SalesInfo salesInfo = JsonConvert.DeserializeObject<SalesInfo>(sales_info);
+                string salesinfo = HttpContext.Current.Request.Headers["salesinfo"].ToString();
+                SalesInfo salesInfo = JsonConvert.DeserializeObject<SalesInfo>(salesinfo);
                 string filePath = String.Format("{0}{1}_{2}_{3}.json", ECRDataFolder, okc_id, salesInfo.ZNo, salesInfo.DocumentNo);
-                File.WriteAllText(filePath, sales_info);
+                File.WriteAllText(filePath, salesinfo);
 
                 wsResult = new WSResult() { Code = ResponseCode.SUCCESS, Content = "Successfully" };
             }
@@ -38,17 +41,20 @@ namespace HuginWS
         }
 
         [OperationContract]
-        [WebInvoke(UriTemplate = "discount?okc_id={okc_id}&password={password}", Method = "POST", BodyStyle = WebMessageBodyStyle.Bare, ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        string discount(string okc_id, string password, string sales_info)
+        [WebInvoke(UriTemplate = "discount?okc_id={okc_id}&password={password}",
+            Method = "POST",
+            ResponseFormat = WebMessageFormat.Json)]
+        string discount(string okc_id, string password)
         {
             WSResult wsResult = null;
             try
             {
                 /* okc_id and password should be done with authority control. */
 
-                SalesInfo salesInfo = JsonConvert.DeserializeObject<SalesInfo>(sales_info);
+                string salesinfo = HttpContext.Current.Request.Headers["salesinfo"].ToString();
+                SalesInfo salesInfo = JsonConvert.DeserializeObject<SalesInfo>(salesinfo);
                 string filePath = String.Format("{0}{1}_{2}_{3}_promo.json", ECRDataFolder, okc_id, salesInfo.ZNo, salesInfo.DocumentNo);
-                File.WriteAllText(filePath, sales_info);
+                File.WriteAllText(filePath, salesinfo);
 
                 /* 
                  * If promotion applied DiscountCode has to value.
@@ -93,7 +99,8 @@ namespace HuginWS
         }
 
         [OperationContract]
-        [WebGet(UriTemplate = "order?okc_id={okc_id}&password={password}&order_id={order_id}")]
+        [WebGet(UriTemplate = "order?okc_id={okc_id}&password={password}&order_id={order_id}",
+            ResponseFormat = WebMessageFormat.Json)]
         string order(string okc_id, string password, string order_id)
         {
             WSResult wsResult = null;
@@ -120,7 +127,8 @@ namespace HuginWS
         }
 
         [OperationContract]
-        [WebGet(UriTemplate = "products?okc_id={okc_id}&password={password}&last_update_date={last_update_date}")]
+        [WebGet(UriTemplate = "products?okc_id={okc_id}&password={password}&last_update_date={last_update_date}",
+            ResponseFormat = WebMessageFormat.Json)]
         string products(string okc_id, string password, string last_update_date)
         {
             WSResult wsResult = null;
