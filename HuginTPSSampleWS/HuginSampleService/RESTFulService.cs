@@ -15,43 +15,41 @@ namespace HuginWS
     public class TPSService
     {
         [OperationContract]
-        [WebInvoke(UriTemplate = "sale?okc_id={okc_id}&password={password}",
-            Method = "POST",
-            ResponseFormat = WebMessageFormat.Json)]
-        string sale(string okc_id, string password)
+        [WebInvoke(UriTemplate = "sale?okc_id={okc_id}&password={password}", Method = "POST",
+            RequestFormat = WebMessageFormat.Json,
+           ResponseFormat = WebMessageFormat.Json)]
+        string sale(string okc_id, string password, Stream strPost)
         {
-            WSResult wsResult = null;
+            string result = string.Empty;
             try
             {
                 /* okc_id and password should be done with authority control. */
 
-                string salesinfo = HttpContext.Current.Request.Headers["salesinfo"].ToString();
+                string salesinfo = new StreamReader(strPost).ReadToEnd();
                 SalesInfo salesInfo = JsonConvert.DeserializeObject<SalesInfo>(salesinfo);
                 string filePath = String.Format("{0}{1}_{2}_{3}.json", ECRDataFolder, okc_id, salesInfo.ZNo, salesInfo.DocumentNo);
                 File.WriteAllText(filePath, salesinfo);
-
-                wsResult = new WSResult() { Code = ResponseCode.SUCCESS, Content = "Successfully" };
             }
             catch (Exception ex)
             {
-                wsResult = new WSResult() { Code = ResponseCode.BADREQUEST, Content = ex.Message };
+                WebOperationContext.Current.OutgoingResponse.StatusCode = System.Net.HttpStatusCode.Conflict;
+                result = ex.Message;
             }
-            string result = JsonConvert.SerializeObject(wsResult);
             return result;
         }
 
         [OperationContract]
-        [WebInvoke(UriTemplate = "discount?okc_id={okc_id}&password={password}",
-            Method = "POST",
-            ResponseFormat = WebMessageFormat.Json)]
-        string discount(string okc_id, string password)
+        [WebInvoke(UriTemplate = "discount?okc_id={okc_id}&password={password}", Method = "POST",
+            RequestFormat = WebMessageFormat.Json,
+           ResponseFormat = WebMessageFormat.Json)]
+        string discount(string okc_id, string password, Stream strPost)
         {
-            WSResult wsResult = null;
+            string result = string.Empty;
             try
             {
                 /* okc_id and password should be done with authority control. */
 
-                string salesinfo = HttpContext.Current.Request.Headers["salesinfo"].ToString();
+                string salesinfo = new StreamReader(strPost).ReadToEnd();
                 SalesInfo salesInfo = JsonConvert.DeserializeObject<SalesInfo>(salesinfo);
                 string filePath = String.Format("{0}{1}_{2}_{3}_promo.json", ECRDataFolder, okc_id, salesInfo.ZNo, salesInfo.DocumentNo);
                 File.WriteAllText(filePath, salesinfo);
@@ -87,14 +85,13 @@ namespace HuginWS
 
                 //salesInfo.SaleItems[0].DiscountInfo = discountInfo;
 
-                string resultContent = JsonConvert.SerializeObject(salesInfo).Replace("\"", "'");
-                wsResult = new WSResult() { Code = ResponseCode.SUCCESS, Content = resultContent };
+                result = JsonConvert.SerializeObject(salesInfo).Replace("\"", "'");
             }
             catch (Exception ex)
             {
-                wsResult = new WSResult() { Code = ResponseCode.BADREQUEST, Content = ex.Message };
+                WebOperationContext.Current.OutgoingResponse.StatusCode = System.Net.HttpStatusCode.Conflict;
+                result = ex.Message;
             }
-            string result = JsonConvert.SerializeObject(wsResult);
             return result;
         }
 
@@ -103,7 +100,7 @@ namespace HuginWS
             ResponseFormat = WebMessageFormat.Json)]
         string order(string okc_id, string password, string order_id)
         {
-            WSResult wsResult = null;
+            string result = string.Empty;
             try
             {
                 /* okc_id and password should be done with authority control. */
@@ -114,15 +111,38 @@ namespace HuginWS
                 //Order content includes salesinfo object.
                 SalesInfo salesInfo = JsonConvert.DeserializeObject<SalesInfo>(orderData);
 
-                string resultContent = JsonConvert.SerializeObject(salesInfo).Replace("\"", "'");
-                wsResult = new WSResult() { Code = ResponseCode.SUCCESS, Content = resultContent };
+                result = JsonConvert.SerializeObject(salesInfo).Replace("\"", "'");
 
             }
             catch (Exception ex)
             {
-                wsResult = new WSResult() { Code = ResponseCode.BADREQUEST, Content = ex.Message };
+                WebOperationContext.Current.OutgoingResponse.StatusCode = System.Net.HttpStatusCode.Conflict;
+                result = ex.Message;
             }
-            string result = JsonConvert.SerializeObject(wsResult);
+            return result.Replace("\"", "'");
+        }
+
+        [OperationContract]
+        [WebInvoke(UriTemplate = "order?okc_id={okc_id}&password={password}&order_id={order_id}&error_code={error_code}&error_desc={error_desc}",
+            Method = "PUT",
+            ResponseFormat = WebMessageFormat.Json)]
+        string orderack(string okc_id, string password, string order_id, string error_code, string error_desc)
+        {
+            string result = string.Empty;
+            try
+            {
+                /* okc_id and password should be done with authority control. */
+
+                result = String.Format("orderid : {0}\r\n error_code : {1}\r\n error_desc : {2}", order_id, error_code, error_desc);
+
+                //orderACK message added to file
+                File.WriteAllText("orderACK.txt", result);
+            }
+            catch (Exception ex)
+            {
+                WebOperationContext.Current.OutgoingResponse.StatusCode = System.Net.HttpStatusCode.Conflict;
+                result = ex.Message;
+            }
             return result;
         }
 
@@ -131,29 +151,46 @@ namespace HuginWS
             ResponseFormat = WebMessageFormat.Json)]
         string products(string okc_id, string password, string last_update_date)
         {
-            WSResult wsResult = null;
+            string result = string.Empty;
             try
             {
                 /* okc_id and password should be done with authority control. */
 
                 //Sample product list
-                string productData = File.ReadAllText(TestDataFolder + "products.txt");
-
-                //string resultContent = JsonConvert.SerializeObject(salesInfo).Replace("\"", "'");
-                wsResult = new WSResult() { Code = ResponseCode.SUCCESS, Content = productData };
-
+                result = File.ReadAllText(TestDataFolder + "products.txt");
             }
             catch (Exception ex)
             {
-                wsResult = new WSResult() { Code = ResponseCode.BADREQUEST, Content = ex.Message };
+                WebOperationContext.Current.OutgoingResponse.StatusCode = System.Net.HttpStatusCode.Conflict;
+                result = ex.Message;
             }
-            string result = JsonConvert.SerializeObject(wsResult);
+            return result;
+        }
+
+        [OperationContract]
+        [WebGet(UriTemplate = "stock?okc_id={okc_id}&password={password}&barcode={barcode}&serial={serial}&pluno={pluno}",
+            ResponseFormat = WebMessageFormat.Json)]
+        string stock(string okc_id, string password, string barcode, string serial, string pluno)
+        {
+            string result = string.Empty;
+            try
+            {
+                /* okc_id and password should be done with authority control. */
+
+                // do stock or serial control and return 200-SUCCESS.
+            }
+            catch (Exception ex)
+            {
+                WebOperationContext.Current.OutgoingResponse.StatusCode = System.Net.HttpStatusCode.Conflict;
+                result = ex.Message;
+            }
             return result;
         }
 
         #region StaticVariables
         public static string ECRDataFolder = AppDomain.CurrentDomain.BaseDirectory + "data\\";
         public static string TestDataFolder = AppDomain.CurrentDomain.BaseDirectory + "testdata\\";
+        private static String strVersion = "$Revision: 8780 $";
         #endregion
     }
 }
